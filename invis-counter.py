@@ -3,7 +3,7 @@ from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, Con
 import re
 import unicodedata
 
-TOKEN = '7333435842:AAH5Kb5jk2QO-ocoTLDR_DFHn1vfk3ZQdNI'  # ← вставь сюда токен от @BotFather
+TOKEN = '7333435842:AAH5Kb5jk2QO-ocoTLDR_DFHn1vfk3ZQdNI'  # ← вставь сюда токен
 
 total_sum = 0
 
@@ -26,11 +26,16 @@ def normalize_amount(raw):
 def extract_amount(text):
     text = clean_spaces(text)
 
-    # ❌ Игнорируем отменённые транзакции
+    # ❌ игнор отменённых транзакций
     if "отмен" in text.lower():
         return 0
 
     lines = text.splitlines()
+
+    # ✅ Uzum
+    uzum_match = re.search(r'Сумма:\s*([\d\s.,]+)', text)
+    if uzum_match:
+        return normalize_amount(uzum_match.group(1))
 
     # ✅ PAYNET
     paynet_match = re.search(r'Tranzaksiya\s+summasi:\s*([\d\s.,]+)', text, re.IGNORECASE)
@@ -94,7 +99,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     reply_markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
 
     await update.message.reply_text(
-        "👋 Пересылай сюда пополнения от CardXabar, Humo, Payme, Click, Paynet.\n"
+        "👋 Пересылай сюда пополнения от CardXabar, Humo, Payme, Click, Paynet, Uzum.\n"
         "Суммы будут учтены и отображены.\n\n"
         "📌 Команды:\n"
         "/total — показать и сбросить сумму\n"
